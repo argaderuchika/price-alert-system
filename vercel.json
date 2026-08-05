@@ -1,8 +1,12 @@
 {
   "services": {
     "frontend": {
+      "root": "frontend",
       "buildCommand": "npm run build",
       "outputDirectory": "dist"
+    },
+    "backend": {
+      "root": "backend"
     }
   },
   "rewrites": [
