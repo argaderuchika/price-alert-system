@@ -5,7 +5,6 @@ import PriceSimulator from './components/PriceSimulator';
 import ActiveAlerts from './components/ActiveAlerts';
 import NotificationDrawer from './components/NotificationDrawer';
 import Toast from './components/Toast';
-import { RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from './apiConfig';
 
 export default function App() {
@@ -41,7 +40,6 @@ export default function App() {
   useEffect(() => {
     fetchData();
 
-    // Setup periodic polling fallback (every 3 seconds) for serverless compatibility
     const pollInterval = setInterval(() => {
       fetchData();
     }, 3000);
@@ -170,38 +168,8 @@ export default function App() {
             <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
               Real-Time Price Alert System
             </h1>
-            {/* <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-              Price Sentinel
-            </h1> */}
-            {/* <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Real-Time Price Alert Engine
-            </p> */}
           </div>
         </div>
-
-        {/* <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '5px 12px',
-            borderRadius: '6px',
-            background: '#ffffff',
-            border: '1px solid var(--border-color)',
-            fontSize: '0.78rem',
-            fontWeight: 500,
-            color: 'var(--text-muted)'
-            <span style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: sseConnected ? 'var(--accent-emerald)' : 'var(--accent-rose)'
-            }} />
-            {sseConnected ? 'Connected' : 'Offline'}
-          </div>
-
-
-        </div> */}
       </header>
 
       <StatsBar alerts={alerts} prices={prices} notifications={notifications} sseConnected={sseConnected} />

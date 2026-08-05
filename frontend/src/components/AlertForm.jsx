@@ -10,6 +10,15 @@ export default function AlertForm({ onAlertCreated, existingPrices }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successNotice, setSuccessNotice] = useState('');
 
+  React.useEffect(() => {
+    if (!targetPrice && existingPrices && existingPrices.length > 0) {
+      const btc = existingPrices.find(p => p.itemName.toUpperCase() === 'BTC');
+      if (btc && btc.currentPrice) {
+        setTargetPrice(btc.currentPrice.toString());
+      }
+    }
+  }, [existingPrices]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -60,6 +69,15 @@ export default function AlertForm({ onAlertCreated, existingPrices }) {
     }
   };
 
+  const handleSelectSymbol = (symbol) => {
+    const uppercaseSymbol = symbol.toUpperCase();
+    setItemName(uppercaseSymbol);
+    const matched = existingPrices.find(p => p.itemName.toUpperCase() === uppercaseSymbol);
+    if (matched && matched.currentPrice) {
+      setTargetPrice(matched.currentPrice.toString());
+    }
+  };
+
   const handleQuickPriceSet = (multiplier) => {
     const matched = existingPrices.find(p => p.itemName.toUpperCase() === itemName.toUpperCase());
     if (matched && matched.currentPrice) {
@@ -67,6 +85,8 @@ export default function AlertForm({ onAlertCreated, existingPrices }) {
       setTargetPrice(computed);
     }
   };
+
+  const currentMatchedPrice = existingPrices.find(p => p.itemName.toUpperCase() === itemName.toUpperCase())?.currentPrice;
 
   return (
     <div className="panel" style={{ padding: '20px' }}>
@@ -113,20 +133,27 @@ export default function AlertForm({ onAlertCreated, existingPrices }) {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div className="form-group">
-          <label className="form-label">Symbol / Item</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="form-label">Symbol / Item</label>
+            {currentMatchedPrice && (
+              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                Current: ${currentMatchedPrice.toLocaleString()}
+              </span>
+            )}
+          </div>
           <input
             type="text"
             className="form-input"
             placeholder="e.g. BTC, ETH, AAPL"
             value={itemName}
-            onChange={(e) => setItemName(e.target.value.toUpperCase())}
+            onChange={(e) => handleSelectSymbol(e.target.value)}
           />
           <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
             {['BTC', 'ETH', 'AAPL', 'TSLA', 'NVDA'].map(ticker => (
               <button
                 type="button"
                 key={ticker}
-                onClick={() => setItemName(ticker)}
+                onClick={() => handleSelectSymbol(ticker)}
                 className="btn btn-secondary btn-sm"
                 style={{
                   fontSize: '0.72rem',

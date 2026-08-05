@@ -28,14 +28,20 @@ function wrapAlert(doc) {
   return {
     ...doc,
     async save() {
-      const idx = memoryDB.alerts.findIndex(a => String(a._id) === String(doc._id));
+      const idx = memoryDB.alerts.findIndex(a => String(a._id) === String(this._id));
       if (idx !== -1) {
-        memoryDB.alerts[idx] = { ...doc, updatedAt: new Date() };
+        memoryDB.alerts[idx] = {
+          ...memoryDB.alerts[idx],
+          status: this.status,
+          triggeredAt: this.triggeredAt,
+          triggeredPrice: this.triggeredPrice,
+          updatedAt: new Date(),
+        };
       }
       return this;
     },
     async deleteOne() {
-      memoryDB.alerts = memoryDB.alerts.filter(a => String(a._id) !== String(doc._id));
+      memoryDB.alerts = memoryDB.alerts.filter(a => String(a._id) !== String(this._id));
       return { deletedCount: 1 };
     }
   };

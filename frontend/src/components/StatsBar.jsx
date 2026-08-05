@@ -23,18 +23,8 @@ export default function StatsBar({ alerts, prices, notifications, sseConnected }
       </div>
 
       <div className="panel" style={{ padding: '14px 16px' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Stream Status</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-          <span style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: sseConnected ? '#10b981' : '#3b82f6',
-          }} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: sseConnected ? '#047857' : '#1d4ed8' }}>
-            {sseConnected ? 'Real-Time SSE' : 'Active'}
-          </span>
-        </div>
+        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Audit Logs</p>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '4px', color: 'var(--text-main)' }}>{notifications.length}</h2>
       </div>
     </div>
   );

@@ -3,12 +3,10 @@ const router = express.Router();
 const Alert = require('../models/Alert');
 const Price = require('../models/Price');
 
-
 router.post('/', async (req, res) => {
   try {
     const { itemName, targetPrice, condition } = req.body;
 
-    // Validation for Required fields
     if (!itemName || targetPrice === undefined || !condition) {
       return res.status(400).json({
         success: false,
@@ -20,7 +18,6 @@ router.post('/', async (req, res) => {
     const parsedTargetPrice = Number(targetPrice);
     const upperCondition = String(condition).trim().toUpperCase();
 
-    // Validation for Item Name non-empty
     if (!trimmedItemName) {
       return res.status(400).json({
         success: false,
@@ -28,7 +25,6 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Validation for Target Price must be valid number > 0
     if (isNaN(parsedTargetPrice) || parsedTargetPrice <= 0) {
       return res.status(400).json({
         success: false,
@@ -36,7 +32,6 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Validation for Valid condition
     if (!['ABOVE', 'BELOW'].includes(upperCondition)) {
       return res.status(400).json({
         success: false,
@@ -44,7 +39,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Edge Case - Duplicate Alert Prevention
+    // Check for duplicate active alert
     const existingDuplicate = await Alert.findOne({
       itemName: trimmedItemName,
       targetPrice: parsedTargetPrice,
@@ -60,7 +55,6 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Save alert
     const alert = await Alert.create({
       itemName: trimmedItemName,
       targetPrice: parsedTargetPrice,
@@ -68,7 +62,7 @@ router.post('/', async (req, res) => {
       status: 'PENDING',
     });
 
-    // Check if item has a current price already set and evaluate right away if threshold met
+    // Check current price status for instant feedback
     const currentPriceDoc = await Price.findOne({ itemName: trimmedItemName });
     let immediateTriggerNotice = null;
 
@@ -98,7 +92,6 @@ router.post('/', async (req, res) => {
     });
   }
 });
-
 
 router.get('/', async (req, res) => {
   try {
@@ -130,9 +123,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-// Remove/delete a price alert
-
 router.delete('/:id', async (req, res) => {
   try {
     const alert = await Alert.findById(req.params.id);
@@ -160,8 +150,6 @@ router.delete('/:id', async (req, res) => {
     });
   }
 });
-
-// Reactivate a triggered alert back to PENDING status
 
 router.post('/:id/reset', async (req, res) => {
   try {

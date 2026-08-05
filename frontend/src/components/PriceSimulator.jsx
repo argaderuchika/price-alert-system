@@ -13,6 +13,12 @@ export default function PriceSimulator({ prices, onPriceUpdated }) {
     currentPrice: 50000,
   };
 
+  React.useEffect(() => {
+    if (activePriceObj && activePriceObj.currentPrice) {
+      setCustomPrice(activePriceObj.currentPrice.toString());
+    }
+  }, [selectedItem, prices]);
+
   const handleSimulate = async (priceToSet) => {
     const targetVal = parseFloat(priceToSet);
     if (isNaN(targetVal) || targetVal < 0) return;
