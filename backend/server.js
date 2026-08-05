@@ -44,15 +44,14 @@ app.get(['/api/health', '/health'], (req, res) => {
   });
 });
 
-// Start Server locally if run directly
-if (require.main === module) {
-  const startServer = async () => {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Price Alert Backend Server running on port ${PORT}`);
-    });
-  };
-  startServer();
-}
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Price Alert Backend Server running on port ${PORT}`);
+    console.log(`   Health Check: http://localhost:${PORT}/api/health`);
+  });
+};
+
+startServer();
 
 module.exports = app;
