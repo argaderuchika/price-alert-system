@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../apiConfig';
 
 export default function AlertForm({ onAlertCreated, existingPrices }) {
   const [itemName, setItemName] = useState('BTC');
@@ -28,7 +29,7 @@ export default function AlertForm({ onAlertCreated, existingPrices }) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/alerts', {
+      const res = await fetch(`${API_BASE_URL}/api/alerts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

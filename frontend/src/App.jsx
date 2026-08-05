@@ -6,6 +6,7 @@ import ActiveAlerts from './components/ActiveAlerts';
 import NotificationDrawer from './components/NotificationDrawer';
 import Toast from './components/Toast';
 import { RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from './apiConfig';
 
 export default function App() {
   const [alerts, setAlerts] = useState([]);
@@ -18,9 +19,9 @@ export default function App() {
   const fetchData = async () => {
     try {
       const [alertsRes, pricesRes, notifRes] = await Promise.all([
-        fetch('/api/alerts'),
-        fetch('/api/prices'),
-        fetch('/api/notifications'),
+        fetch(`${API_BASE_URL}/api/alerts`),
+        fetch(`${API_BASE_URL}/api/prices`),
+        fetch(`${API_BASE_URL}/api/notifications`),
       ]);
 
       const alertsData = await alertsRes.json();
@@ -40,7 +41,7 @@ export default function App() {
   useEffect(() => {
     fetchData();
 
-    const eventSource = new EventSource('/api/notifications/stream');
+    const eventSource = new EventSource(`${API_BASE_URL}/api/notifications/stream`);
 
     eventSource.onopen = () => {
       setSseConnected(true);
@@ -95,7 +96,7 @@ export default function App() {
 
   const handleDeleteAlert = async (id) => {
     try {
-      const res = await fetch(`/api/alerts/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/alerts/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setAlerts(prev => prev.filter(a => a._id !== id));
       }
@@ -106,7 +107,7 @@ export default function App() {
 
   const handleResetAlert = async (id) => {
     try {
-      const res = await fetch(`/api/alerts/${id}/reset`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/alerts/${id}/reset`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
         setAlerts(prev => prev.map(a => a._id === id ? data.alert : a));
@@ -118,7 +119,7 @@ export default function App() {
 
   const handleClearNotifications = async () => {
     try {
-      const res = await fetch('/api/notifications', { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/notifications`, { method: 'DELETE' });
       if (res.ok) {
         setNotifications([]);
       }

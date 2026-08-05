@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from '../apiConfig';
 
 export default function PriceSimulator({ prices, onPriceUpdated }) {
   const [selectedItem, setSelectedItem] = useState('BTC');
@@ -20,7 +21,7 @@ export default function PriceSimulator({ prices, onPriceUpdated }) {
     setLastResult(null);
 
     try {
-      const res = await fetch('/api/prices/simulate', {
+      const res = await fetch(`${API_BASE_URL}/api/prices/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

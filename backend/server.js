@@ -13,22 +13,10 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/alerts', require('./routes/alertRoutes'));
-app.use('/api/prices', require('./routes/priceRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
-
-// Healthcheck Route
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Seed initial default market prices on startup
+// Ensure DB is connected for serverless function calls
+let isSeeded = false;
 const seedDefaultPrices = async () => {
+  if (isSeeded) return;
   const Price = require('./models/Price');
   const defaults = [
     { itemName: 'BTC', currentPrice: 65000 },
@@ -44,18 +32,44 @@ const seedDefaultPrices = async () => {
       await Price.create(item);
     }
   }
-  console.log('[Seeded Default Prices]: BTC, ETH, AAPL, TSLA, NVDA');
+  isSeeded = true;
 };
 
-// Start Server
-const startServer = async () => {
-  await connectDB();
-  await seedDefaultPrices();
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    await seedDefaultPrices();
+  } catch (err) {
+    console.error('DB connection error in middleware:', err);
+  }
+  next();
+});
 
-  app.listen(PORT, () => {
-    console.log(`Price Alert Backend Server running on port ${PORT}`);
-    console.log(`   Health Check: http://localhost:${PORT}/api/health`);
+// Routes
+app.use('/api/alerts', require('./routes/alertRoutes'));
+app.use('/api/prices', require('./routes/priceRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+
+// Healthcheck Route
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
   });
-};
+});
 
-startServer();
+// Start Server locally if run directly
+if (require.main === module) {
+  const startServer = async () => {
+    await connectDB();
+    await seedDefaultPrices();
+    app.listen(PORT, () => {
+      console.log(`Price Alert Backend Server running on port ${PORT}`);
+      console.log(`   Health Check: http://localhost:${PORT}/api/health`);
+    });
+  };
+  startServer();
+}
+
+module.exports = app;
