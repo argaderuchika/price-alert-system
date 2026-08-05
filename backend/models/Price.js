@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { PriceMemory } = require('./memoryStore');
+const { getIsMemoryMode } = require('../config/db');
 
 const priceSchema = new mongoose.Schema(
   {
@@ -28,4 +30,11 @@ const priceSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Price', priceSchema);
+const MongoosePrice = mongoose.model('Price', priceSchema);
+
+module.exports = {
+  findOne: (query) => getIsMemoryMode() ? PriceMemory.findOne(query) : MongoosePrice.findOne(query),
+  create: (data) => getIsMemoryMode() ? PriceMemory.create(data) : MongoosePrice.create(data),
+  findOneAndUpdate: (query, update, options) => getIsMemoryMode() ? PriceMemory.findOneAndUpdate(query, update, options) : MongoosePrice.findOneAndUpdate(query, update, options),
+  find: (query) => getIsMemoryMode() ? PriceMemory.find(query) : MongoosePrice.find(query),
+};

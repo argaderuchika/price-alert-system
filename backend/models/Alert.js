@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { AlertMemory } = require('./memoryStore');
+const { getIsMemoryMode } = require('../config/db');
 
 const alertSchema = new mongoose.Schema(
   {
@@ -42,7 +44,13 @@ const alertSchema = new mongoose.Schema(
   }
 );
 
-// Prevent exact duplicate active alerts for the same item, condition, and target price
 alertSchema.index({ itemName: 1, condition: 1, targetPrice: 1, status: 1 });
 
-module.exports = mongoose.model('Alert', alertSchema);
+const MongooseAlert = mongoose.model('Alert', alertSchema);
+
+module.exports = {
+  findOne: (query) => getIsMemoryMode() ? AlertMemory.findOne(query) : MongooseAlert.findOne(query),
+  create: (data) => getIsMemoryMode() ? AlertMemory.create(data) : MongooseAlert.create(data),
+  find: (query) => getIsMemoryMode() ? AlertMemory.find(query) : MongooseAlert.find(query),
+  findById: (id) => getIsMemoryMode() ? AlertMemory.findById(id) : MongooseAlert.findById(id),
+};

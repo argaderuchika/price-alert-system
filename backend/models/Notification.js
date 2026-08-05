@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { NotificationMemory } = require('./memoryStore');
+const { getIsMemoryMode } = require('../config/db');
 
 const notificationSchema = new mongoose.Schema(
   {
@@ -39,4 +41,10 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Notification', notificationSchema);
+const MongooseNotification = mongoose.model('Notification', notificationSchema);
+
+module.exports = {
+  find: (query) => getIsMemoryMode() ? NotificationMemory.find(query) : MongooseNotification.find(query),
+  create: (data) => getIsMemoryMode() ? NotificationMemory.create(data) : MongooseNotification.create(data),
+  deleteMany: (query) => getIsMemoryMode() ? NotificationMemory.deleteMany(query) : MongooseNotification.deleteMany(query),
+};

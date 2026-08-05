@@ -1,54 +1,37 @@
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
 
-let mongoServer;
+let isConnected = false;
+let isMemoryMode = false;
 
 const connectDB = async () => {
-  try {
-    let mongoUri = process.env.MONGODB_URI;
+  if (isConnected) return;
 
-    if (!mongoUri) {
-      console.log('No MONGODB_URI provided. Initializing MongoMemoryServer for zero-config evaluation...');
-      mongoServer = await MongoMemoryServer.create();
-      mongoUri = mongoServer.getUri();
+  const mongoUri = process.env.MONGODB_URI;
+
+  if (mongoUri) {
+    try {
+      await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 });
+      isConnected = true;
+      isMemoryMode = false;
+      console.log('[MongoDB Connected]: Connected to Remote MongoDB Atlas');
+      return;
+    } catch (err) {
+      console.warn('[MongoDB Connect Failed]: Falling back to in-memory JS store mode:', err.message);
     }
-
-    const conn = await mongoose.connect(mongoUri);
-    console.log(`[MongoDB Connected]: ${conn.connection.host || 'In-Memory Instance'} (${conn.connection.name})`);
-
-    // Handle connection events
-    mongoose.connection.on('error', (err) => {
-      console.error('[MongoDB Error]:', err.message);
-    });
-
-    mongoose.connection.on('disconnected', () => {
-      console.warn('[MongoDB Disconnected]');
-    });
-
-  } catch (error) {
-    console.error(`[MongoDB Connection Failed]: ${error.message}`);
-    // If standard URI failed, try falling back to memory server
-    if (process.env.MONGODB_URI && !mongoServer) {
-      try {
-        console.log('Attempting fallback to MongoMemoryServer...');
-        mongoServer = await MongoMemoryServer.create();
-        const fallbackUri = mongoServer.getUri();
-        const conn = await mongoose.connect(fallbackUri);
-        console.log(`[MongoDB Fallback Connected]: In-Memory Instance (${conn.connection.name})`);
-        return;
-      } catch (fallbackError) {
-        console.error('[Fallback Failed]:', fallbackError.message);
-      }
-    }
-    process.exit(1);
   }
+
+  isMemoryMode = true;
+  isConnected = true;
+  console.log('[Memory DB]: Running in zero-config In-Memory JS store mode');
 };
 
 const disconnectDB = async () => {
-  await mongoose.disconnect();
-  if (mongoServer) {
-    await mongoServer.stop();
+  if (!isMemoryMode) {
+    await mongoose.disconnect();
   }
+  isConnected = false;
 };
 
-module.exports = { connectDB, disconnectDB };
+const getIsMemoryMode = () => isMemoryMode;
+
+module.exports = { connectDB, disconnectDB, getIsMemoryMode };
