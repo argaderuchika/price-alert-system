@@ -32,7 +32,7 @@ export default function StatsBar({ alerts, prices, notifications, sseConnected }
             backgroundColor: sseConnected ? '#10b981' : '#3b82f6',
           }} />
           <span style={{ fontSize: '0.9rem', fontWeight: 600, color: sseConnected ? '#047857' : '#1d4ed8' }}>
-            {sseConnected ? 'Real-Time SSE' : 'Active (Polling)'}
+            {sseConnected ? 'Real-Time SSE' : 'Active'}
           </span>
         </div>
       </div>

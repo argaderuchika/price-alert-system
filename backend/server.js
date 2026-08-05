@@ -13,45 +13,31 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Ensure DB is connected for serverless function calls
-let isSeeded = false;
-const seedDefaultPrices = async () => {
-  if (isSeeded) return;
-  const Price = require('./models/Price');
-  const defaults = [
-    { itemName: 'BTC', currentPrice: 65000 },
-    { itemName: 'ETH', currentPrice: 3400 },
-    { itemName: 'AAPL', currentPrice: 220 },
-    { itemName: 'TSLA', currentPrice: 210 },
-    { itemName: 'NVDA', currentPrice: 125 },
-  ];
-
-  for (const item of defaults) {
-    const exists = await Price.findOne({ itemName: item.itemName });
-    if (!exists) {
-      await Price.create(item);
-    }
-  }
-  isSeeded = true;
-};
-
 app.use(async (req, res, next) => {
   try {
     await connectDB();
-    await seedDefaultPrices();
   } catch (err) {
     console.error('DB connection error in middleware:', err);
   }
   next();
 });
 
-// Routes
-app.use('/api/alerts', require('./routes/alertRoutes'));
-app.use('/api/prices', require('./routes/priceRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
+const alertRoutes = require('./routes/alertRoutes');
+const priceRoutes = require('./routes/priceRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+
+// Mount routes for both /api/* and stripped /* paths to handle Vercel serverless rewrites
+app.use('/api/alerts', alertRoutes);
+app.use('/alerts', alertRoutes);
+
+app.use('/api/prices', priceRoutes);
+app.use('/prices', priceRoutes);
+
+app.use('/api/notifications', notificationRoutes);
+app.use('/notifications', notificationRoutes);
 
 // Healthcheck Route
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.status(200).json({
     status: 'OK',
     uptime: process.uptime(),
@@ -63,7 +49,6 @@ app.get('/api/health', (req, res) => {
 if (require.main === module) {
   const startServer = async () => {
     await connectDB();
-    await seedDefaultPrices();
     app.listen(PORT, () => {
       console.log(`Price Alert Backend Server running on port ${PORT}`);
       console.log(`   Health Check: http://localhost:${PORT}/api/health`);
