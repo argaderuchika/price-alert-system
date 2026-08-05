@@ -26,7 +26,6 @@ const alertRoutes = require('./routes/alertRoutes');
 const priceRoutes = require('./routes/priceRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
-// Mount routes for both /api/* and stripped /* paths to handle Vercel serverless rewrites
 app.use('/api/alerts', alertRoutes);
 app.use('/alerts', alertRoutes);
 
@@ -51,7 +50,6 @@ if (require.main === module) {
     await connectDB();
     app.listen(PORT, () => {
       console.log(`Price Alert Backend Server running on port ${PORT}`);
-      console.log(`   Health Check: http://localhost:${PORT}/api/health`);
     });
   };
   startServer();
