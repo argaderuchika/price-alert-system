@@ -29,10 +29,10 @@ export default function StatsBar({ alerts, prices, notifications, sseConnected }
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            backgroundColor: sseConnected ? '#10b981' : '#ef4444',
+            backgroundColor: sseConnected ? '#10b981' : '#3b82f6',
           }} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: sseConnected ? '#047857' : '#be123c' }}>
-            {sseConnected ? 'Real-Time SSE' : 'Offline'}
+          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: sseConnected ? '#047857' : '#1d4ed8' }}>
+            {sseConnected ? 'Real-Time SSE' : 'Active (Polling)'}
           </span>
         </div>
       </div>

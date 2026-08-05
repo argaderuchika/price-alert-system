@@ -41,52 +41,63 @@ export default function App() {
   useEffect(() => {
     fetchData();
 
-    const eventSource = new EventSource(`${API_BASE_URL}/api/notifications/stream`);
+    // Setup periodic polling fallback (every 3 seconds) for serverless compatibility
+    const pollInterval = setInterval(() => {
+      fetchData();
+    }, 3000);
 
-    eventSource.onopen = () => {
-      setSseConnected(true);
-    };
+    let eventSource;
+    try {
+      eventSource = new EventSource(`${API_BASE_URL}/api/notifications/stream`);
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+      eventSource.onopen = () => {
+        setSseConnected(true);
+      };
 
-        if (data.type === 'ALERT_TRIGGERED') {
-          setAlerts(prev => prev.map(a => a._id === data.alert._id ? data.alert : a));
-          setNotifications(prev => [data.notification, ...prev]);
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
 
-          const newToast = {
-            id: Date.now() + Math.random(),
-            message: data.notification.message,
-            timestamp: new Date(),
-          };
-          setToasts(prev => [newToast, ...prev]);
+          if (data.type === 'ALERT_TRIGGERED') {
+            setAlerts(prev => prev.map(a => a._id === data.alert._id ? data.alert : a));
+            setNotifications(prev => [data.notification, ...prev]);
 
-          setTimeout(() => {
-            setToasts(prev => prev.filter(t => t.id !== newToast.id));
-          }, 6000);
+            const newToast = {
+              id: Date.now() + Math.random(),
+              message: data.notification.message,
+              timestamp: new Date(),
+            };
+            setToasts(prev => [newToast, ...prev]);
+
+            setTimeout(() => {
+              setToasts(prev => prev.filter(t => t.id !== newToast.id));
+            }, 6000);
+          }
+
+          if (data.type === 'PRICE_UPDATED') {
+            setPrices(prev => {
+              const exists = prev.find(p => p.itemName === data.price.itemName);
+              if (exists) {
+                return prev.map(p => p.itemName === data.price.itemName ? data.price : p);
+              }
+              return [data.price, ...prev];
+            });
+          }
+        } catch (err) {
+          console.error('Error parsing SSE event:', err);
         }
+      };
 
-        if (data.type === 'PRICE_UPDATED') {
-          setPrices(prev => {
-            const exists = prev.find(p => p.itemName === data.price.itemName);
-            if (exists) {
-              return prev.map(p => p.itemName === data.price.itemName ? data.price : p);
-            }
-            return [data.price, ...prev];
-          });
-        }
-      } catch (err) {
-        console.error('Error parsing SSE event:', err);
-      }
-    };
-
-    eventSource.onerror = () => {
+      eventSource.onerror = () => {
+        setSseConnected(false);
+      };
+    } catch (err) {
       setSseConnected(false);
-    };
+    }
 
     return () => {
-      eventSource.close();
+      clearInterval(pollInterval);
+      if (eventSource) eventSource.close();
     };
   }, []);
 
