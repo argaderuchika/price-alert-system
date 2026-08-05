@@ -70,6 +70,9 @@ const AlertMemory = {
           sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         }
         return Promise.resolve(sorted.map(wrapAlert));
+      },
+      then(resolve, reject) {
+        return Promise.resolve(filtered.map(wrapAlert)).then(resolve, reject);
       }
     };
   },
@@ -120,32 +123,43 @@ const PriceMemory = {
     }
     return null;
   },
-  find() {
+  find(query) {
+    const filtered = memoryDB.prices.filter(p => matchesQuery(p, query));
     return {
       sort(sortObj) {
-        let sorted = [...memoryDB.prices];
+        let sorted = [...filtered];
         if (sortObj && sortObj.lastUpdated === -1) {
           sorted.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
         }
         return Promise.resolve(sorted.map(p => ({ ...p })));
+      },
+      then(resolve, reject) {
+        return Promise.resolve(filtered.map(p => ({ ...p }))).then(resolve, reject);
       }
     };
   }
 };
 
 const NotificationMemory = {
-  find() {
+  find(query) {
+    const filtered = memoryDB.notifications.filter(n => matchesQuery(n, query));
     return {
       sort(sortObj) {
-        let sorted = [...memoryDB.notifications];
+        let sorted = [...filtered];
         if (sortObj && sortObj.createdAt === -1) {
           sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         }
         return {
           limit(n) {
-            return Promise.resolve(sorted.slice(0, n).map(n => ({ ...n })));
+            return Promise.resolve(sorted.slice(0, n).map(doc => ({ ...doc })));
+          },
+          then(resolve, reject) {
+            return Promise.resolve(sorted.map(doc => ({ ...doc }))).then(resolve, reject);
           }
         };
+      },
+      then(resolve, reject) {
+        return Promise.resolve(filtered.map(doc => ({ ...doc }))).then(resolve, reject);
       }
     };
   },

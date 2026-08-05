@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 let isConnected = false;
-let isMemoryMode = false;
+let isMemoryMode = !process.env.MONGODB_URI;
 
 const connectDB = async () => {
   if (isConnected) return;
